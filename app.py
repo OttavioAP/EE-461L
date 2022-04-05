@@ -60,6 +60,7 @@ def registerUser():
     return {"success": True}, 200
 
 
+
 @app.errorhandler(404)
 def not_found(e):
     return app.send_static_file('index.html')
