@@ -58,7 +58,7 @@ class Login extends React.Component {
       .then((res) => res.json())
       .then((data) => {
         console.log(data);
-        if (data.success == true) {
+        if (data.success === true) {
           alert(
             "Please log in with your registered username and password to enter the application!"
           );
