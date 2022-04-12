@@ -1,7 +1,7 @@
 import React from "react";
 import history from "./../history";
 import "./Login.css";
-import { Button, Form, Navbar, Container } from "react-bootstrap";
+import { Button, Form, Navbar, Container, NavbarBrand } from "react-bootstrap";
 
 class Login extends React.Component {
   constructor(props) {
@@ -60,7 +60,7 @@ class Login extends React.Component {
         console.log(data);
         if (data.success == true) {
           alert(
-            "Please log in with your registered username and password to enter the application!"
+            "Registered successfully! Please log in with your registered username and password to enter the application!"
           );
         } else {
           alert("Something is wrong!");
@@ -71,11 +71,11 @@ class Login extends React.Component {
   render() {
     return (
       <div>
-        <Navbar bg="dark">
+        <Navbar bg="dark" variant="dark">
           <Container>
-            <Navbar.Brand>
+            <NavbarBrand>
               Welcome to Our Project Management Website!
-            </Navbar.Brand>
+            </NavbarBrand>
           </Container>
         </Navbar>
         <div className="Login">
