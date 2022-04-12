@@ -140,10 +140,13 @@ def getDatasets():
     i = 0
     #extract all the URLs found within a page’s <a> tags
     for link in soup.find_all('a'):
-        if i in range(15, 20):
-            href = link.get('href')
-            url = "https://physionet.org/" + href + "1.0.0/"
-            data_url.append(url)
+        if i in range(15, 22):
+            if i == 18 or i == 19:
+                print('random')
+            else:
+                href = link.get('href')
+                url = "https://physionet.org/" + href + "1.0.0/"
+                data_url.append(url)
         i +=1
 
     for url in data_url:
