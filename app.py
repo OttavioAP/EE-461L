@@ -118,20 +118,57 @@ def getProjects():
 @app.route("/getDatasets", methods=["GET"])
 def getDatasets():
     five_datasets = []
-    URL = "https://physionet.org/about/database/"
-    page = requests.get(URL)
-    soup = BeautifulSoup(page.content, "html.parser")
-    datasets = soup.find_all("li")
- 
-    for i in range(5):
-        title = datasets[50+i].find("a", href=True, text=True)
-        format_dataset = {
-            "name": title.text.strip(),
-            "url": "https://physionet.org"+title['href'],
-            "metadata": datasets[50+i].text.strip()
-        }
-        five_datasets.append(format_dataset)
+    #URL = "https://physionet.org/about/database/"
+    #page = requests.get(URL)
+    #soup = BeautifulSoup(page.content, "html.parser")
+    #datasets = soup.find_all("li")
+    
+    #for i in range(5):
+    #    title = datasets[50+i].find("a", href=True, text=True)
+    #    format_dataset = {
+    #        "name": title.text.strip(),
+    #        "url": "https://physionet.org"+title['href'],
+    #        "metadata": datasets[50+i].text.strip()
+    #    }
+    #    five_datasets.append(format_dataset)
 
+    url = 'https://physionet.org/about/database/'
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text)
+ 
+    data_url = []
+    i = 0
+    #extract all the URLs found within a page’s <a> tags
+    for link in soup.find_all('a'):
+        if i in range(15, 20):
+            href = link.get('href')
+            url = "https://physionet.org/" + href + "1.0.0/"
+            data_url.append(url)
+        i +=1
+
+    for url in data_url:
+        format_dataset = {}
+        response = requests.get(url)
+        soup = BeautifulSoup(response.text)
+        format_dataset['url'] = url
+        format_dataset['title'] = soup.title.string #title
+   
+        #description of the dataset
+        for content in soup.find_all('meta'):
+            if content.get('name') == "description":
+                format_dataset['description'] = content.get('content')
+    
+        #authors and citation
+        format_dataset['author'] = soup.find('td').string
+    
+        # download
+        for li in soup.find_all('li'):
+            for a in li.find_all('a'):
+                url = a.get('href')
+                if 'zip' in url:
+                    format_dataset['download'] = 'https://physionet.org'+ url
+        five_datasets.append(format_dataset)
+    
     return {"datasets": five_datasets}, 200
 
 
