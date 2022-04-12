@@ -1,7 +1,10 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify, Response, json
 from flask_restx import Api
 from pymongo import MongoClient
 import certifi
+from bson import json_util
+import requests
+from bs4 import BeautifulSoup
 
 app = Flask(__name__, static_folder='./frontend/build', static_url_path='/')
 rest_api = Api(version="1.0", title="Users API")
@@ -14,6 +17,34 @@ hwsets_collection = db.HWSets
 #test database connection
 print("Here are a list of database connection!", db.list_collection_names())
 
+#ascii shift value for our encryption / decryption
+shift_value = 4
+
+#encrypt given text
+def encrypt(inputText):
+
+    #Reverse the letters of the string
+    reverse = inputText[::-1]      
+    
+    encrypted = ""
+    
+    for i in range(len(reverse)):  
+        encrypted  += chr(ord(reverse[i]) + shift_value) #shift ascii by 'shift_value'
+        
+    return encrypted
+
+#decrypt given encrypted text
+def decrypt(encrypted):
+    
+    decrypted = ""
+    
+    for i in range(len(encrypted)):
+        decrypted += chr(ord(encrypted[i]) - shift_value) #shift ascii by 'shift_value'
+
+    decrypted = decrypted[::-1]
+    
+    return decrypted
+
 @app.route('/')
 def index():
     return app.send_static_file('index.html')
@@ -22,8 +53,8 @@ def index():
 @app.route("/login", methods=['POST'])
 def getServerResponse():
     request_data = request.get_json()
-    username = request_data.get("username")
-    password = request_data.get("password")
+    username = encrypt(request_data.get("username"))
+    password = encrypt(request_data.get("password"))
 
 
     if(not user_collection.find_one({"Username": username})):
@@ -50,8 +81,8 @@ def registerUser():
     username = request_data.get("username")
     password = request_data.get("password")
     user = {
-        "Username": username,
-        "Password": password,
+        "Username": encrypt(username),
+        "Password": encrypt(password),
         "Project": []
     }
     user_id = user_collection.insert_one(user)
@@ -59,6 +90,49 @@ def registerUser():
    
     return {"success": True}, 200
 
+@app.route("/createproject", methods=['POST'])
+def createProject():
+    request_data = request.get_json()
+    projectname = request_data.get("projectname")
+    projectdescription = request_data.get("projectdescription")
+    project = {
+        "projectname": projectname,
+        "projectdescription": projectdescription,
+        "hwset1": 0,
+        "hwset2": 0
+    }
+    project_id = project_collection.insert_one(project)
+    print("The created project id is: ", project_id)
+   
+    return {"success": True}, 200
+
+@app.route("/getAllProjects", methods=["GET"])
+def getProjects():
+    projects=[]
+    for x in project_collection.find({}):
+        print(x)
+        projects.append(x)
+
+    return {"projects": json.loads(json_util.dumps(projects))}, 200
+
+@app.route("/getDatasets", methods=["GET"])
+def getDatasets():
+    five_datasets = []
+    URL = "https://physionet.org/about/database/"
+    page = requests.get(URL)
+    soup = BeautifulSoup(page.content, "html.parser")
+    datasets = soup.find_all("li")
+ 
+    for i in range(5):
+        title = datasets[50+i].find("a", href=True, text=True)
+        format_dataset = {
+            "name": title.text.strip(),
+            "url": "https://physionet.org"+title['href'],
+            "metadata": datasets[50+i].text.strip()
+        }
+        five_datasets.append(format_dataset)
+
+    return {"datasets": five_datasets}, 200
 
 
 @app.errorhandler(404)
