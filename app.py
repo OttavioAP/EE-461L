@@ -61,7 +61,7 @@ def getServerResponse():
     if(not user_collection.find_one({"Username": username})):
         return {
             "success": False,
-            "msg": "The user is not registered, please register first!"
+            "msg": "User not existed! The user is not registered, please register first!"
         }, 200
 
     elif(not user_collection.find_one({"Username": username, "Password": password})):
@@ -96,9 +96,11 @@ def createProject():
     request_data = request.get_json()
     projectname = request_data.get("projectname")
     projectdescription = request_data.get("projectdescription")
+    projectID = int(request_data.get("projectID"))
     project = {
         "projectname": projectname,
         "projectdescription": projectdescription,
+        "projectID": projectID,
         "hwset1": 0,
         "hwset2": 0
     }

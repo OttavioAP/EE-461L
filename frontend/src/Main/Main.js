@@ -11,6 +11,7 @@ export default class Main extends Component {
     this.state = {
       projectname: "",
       projectdescription: "",
+      projectID: 0,
       existingProjects: [],
     };
   }
@@ -23,10 +24,15 @@ export default class Main extends Component {
     this.setState({ projectdescription: projectdescription });
   }
 
+  handleID(projectID) {
+    this.setState({ projectID: projectID });
+  }
+
   handleCreateProject = async () => {
     const params = {
       projectname: this.state.projectname,
       projectdescription: this.state.projectdescription,
+      projectID: this.state.projectID,
     };
     await fetch("/createproject", {
       method: "POST",
@@ -105,6 +111,17 @@ export default class Main extends Component {
                 }}
               />
             </Form.Group>
+            <br />
+            <Form.Group className="mb-3">
+              <Form.Label>Project ID </Form.Label>
+              <Form.Control
+                placeholder="Enter project ID"
+                name="projectID"
+                onChange={(e) => {
+                  this.handleID(e.target.value);
+                }}
+              />
+            </Form.Group>
           </Form>
           <br />
           <Button variant="primary" onClick={this.handleCreateProject}>
@@ -123,7 +140,7 @@ export default class Main extends Component {
         <Table striped bordered hover>
           <thead>
             <tr>
-              <th>#</th>
+              <th>Project ID</th>
               <th>Project Name</th>
               <th>Project Description</th>
               <th>HWSet #1</th>
@@ -135,7 +152,7 @@ export default class Main extends Component {
             {this.state.existingProjects.map((listValue, index) => {
               return (
                 <tr key={index}>
-                  <td>{index}</td>
+                  <td>{listValue.projectID}</td>
                   <td>{listValue.projectname}</td>
                   <td>{listValue.projectdescription}</td>
                   <td>{listValue.hwset1}</td>
