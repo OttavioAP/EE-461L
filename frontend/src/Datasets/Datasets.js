@@ -48,7 +48,9 @@ export default class Datasets extends Component {
           <thead>
             <tr>
               <th>Dataset Name</th>
-              <th>Dataset Metadata</th>
+              <th>Description</th>
+              <th>Author and Citation</th>
+              <th>Dataset Website</th>
               <th>Download</th>
             </tr>
           </thead>
@@ -56,10 +58,14 @@ export default class Datasets extends Component {
             {this.state.datasets.map((listValue, index) => {
               return (
                 <tr key={index}>
-                  <td>{listValue.name}</td>
-                  <td>{listValue.metadata}</td>
+                  <td>{listValue.title}</td>
+                  <td>{listValue.description}</td>
+                  <td>{listValue.author}</td>
                   <td>
-                    <a href={listValue.url}>Download Dataset</a>
+                    <a href={listValue.url}>{listValue.url}</a>
+                  </td>
+                  <td>
+                    <a href={listValue.download}>Download Dataset</a>
                   </td>
                 </tr>
               );

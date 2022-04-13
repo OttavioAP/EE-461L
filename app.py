@@ -5,6 +5,7 @@ import certifi
 from bson import json_util
 import requests
 from bs4 import BeautifulSoup
+from bson.objectid import ObjectId
 
 app = Flask(__name__, static_folder='./frontend/build', static_url_path='/')
 rest_api = Api(version="1.0", title="Users API")
@@ -118,21 +119,159 @@ def getProjects():
 @app.route("/getDatasets", methods=["GET"])
 def getDatasets():
     five_datasets = []
-    URL = "https://physionet.org/about/database/"
-    page = requests.get(URL)
-    soup = BeautifulSoup(page.content, "html.parser")
-    datasets = soup.find_all("li")
- 
-    for i in range(5):
-        title = datasets[50+i].find("a", href=True, text=True)
-        format_dataset = {
-            "name": title.text.strip(),
-            "url": "https://physionet.org"+title['href'],
-            "metadata": datasets[50+i].text.strip()
-        }
-        five_datasets.append(format_dataset)
+    #URL = "https://physionet.org/about/database/"
+    #page = requests.get(URL)
+    #soup = BeautifulSoup(page.content, "html.parser")
+    #datasets = soup.find_all("li")
+    
+    #for i in range(5):
+    #    title = datasets[50+i].find("a", href=True, text=True)
+    #    format_dataset = {
+    #        "name": title.text.strip(),
+    #        "url": "https://physionet.org"+title['href'],
+    #        "metadata": datasets[50+i].text.strip()
+    #    }
+    #    five_datasets.append(format_dataset)
 
+    url = 'https://physionet.org/about/database/'
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text)
+ 
+    data_url = []
+    i = 0
+    #extract all the URLs found within a page’s <a> tags
+    for link in soup.find_all('a'):
+        if i in range(15, 22):
+            if i == 18 or i == 19:
+                print('random')
+            else:
+                href = link.get('href')
+                url = "https://physionet.org/" + href + "1.0.0/"
+                data_url.append(url)
+        i +=1
+
+    for url in data_url:
+        format_dataset = {}
+        response = requests.get(url)
+        soup = BeautifulSoup(response.text)
+        format_dataset['url'] = url
+        format_dataset['title'] = soup.title.string #title
+   
+        #description of the dataset
+        for content in soup.find_all('meta'):
+            if content.get('name') == "description":
+                format_dataset['description'] = content.get('content')
+    
+        #authors and citation
+        format_dataset['author'] = soup.find('td').string
+    
+        # download
+        for li in soup.find_all('li'):
+            for a in li.find_all('a'):
+                url = a.get('href')
+                if 'zip' in url:
+                    format_dataset['download'] = 'https://physionet.org'+ url
+        five_datasets.append(format_dataset)
+    
     return {"datasets": five_datasets}, 200
+
+@app.route('/hw1checkin', methods=['POST'])
+def hw1checkin():
+    data = request.get_json()
+    projectid = data.get("projectid")
+    amount = int(data.get("amount"))
+
+    if not (project_collection.find_one({"_id" : ObjectId(projectid)})):
+        return {"success" : False}, 200
+
+    project = project_collection.find_one({"_id" : ObjectId(projectid)})
+    already_checkout_hw1 = project["hwset1"]
+    
+    if(amount > already_checkout_hw1):
+        return {"success" : False}, 200
+    
+    else:
+        new_checked_out = already_checkout_hw1 - amount
+        current_availability = hwsets_collection.find_one({"Name": "HWSet1"})["Availability"]
+        new_availability = current_availability + amount
+        project_collection.update_one({"_id" : ObjectId(projectid)}, {"$set":{"hwset1": new_checked_out}})
+        hwsets_collection.update_one({"Name": "HWSet1"}, {"$set": {"Availability": new_availability}})
+        return {"success" : True}, 200
+
+@app.route('/hw1checkout', methods=['POST'])
+def hw1checkout():
+    data = request.get_json()
+    projectid = data.get("projectid")
+    amount = data.get("amount")
+
+    project = project_collection.find_one({"_id" : ObjectId(projectid)})
+    already_checkout_hw1 = project["hwset1"]
+    current_availability = hwsets_collection.find_one({"Name": "HWSet1"})["Availability"]
+
+
+    if(int(amount) > current_availability):
+        return {"success" : False}, 200
+    
+    else:
+        new_checked_out = already_checkout_hw1 + int(amount)
+        new_availability = current_availability - int(amount)
+        project_collection.update_one({"_id" : ObjectId(projectid)}, {"$set":{"hwset1": new_checked_out}})
+        hwsets_collection.update_one({"Name": "HWSet1"}, {"$set": {"Availability": new_availability}})
+        return {"success" : True}, 200
+
+@app.route('/hw2checkin', methods=['POST'])
+def hw2checkin():
+    data = request.get_json()
+    projectid = data.get("projectid")
+    amount = int(data.get("amount"))
+
+    if not (project_collection.find_one({"_id" : ObjectId(projectid)})):
+        return {"success" : False}, 200
+
+    project = project_collection.find_one({"_id" : ObjectId(projectid)})
+    already_checkout_hw2 = project["hwset2"]
+    
+    if(amount > already_checkout_hw2):
+        return {"success" : False}, 200
+    
+    else:
+        new_checked_out = already_checkout_hw2 - amount
+        current_availability = hwsets_collection.find_one({"Name": "HWSet2"})["Availability"]
+        new_availability = current_availability + amount
+        project_collection.update_one({"_id" : ObjectId(projectid)}, {"$set":{"hwset2": new_checked_out}})
+        hwsets_collection.update_one({"Name": "HWSet2"}, {"$set": {"Availability": new_availability}})
+        return {"success" : True}, 200
+
+@app.route('/hw2checkout', methods=['POST'])
+def hw2checkout():
+    data = request.get_json()
+    projectid = data.get("projectid")
+    amount = data.get("amount")
+
+    project = project_collection.find_one({"_id" : ObjectId(projectid)})
+    already_checkout_hw2 = project["hwset2"]
+    current_availability = hwsets_collection.find_one({"Name": "HWSet2"})["Availability"]
+
+    if(int(amount) > current_availability):
+        return {"success" : False}, 200
+    
+    else:
+        new_checked_out = already_checkout_hw2 + int(amount)
+        new_availability = current_availability - int(amount)
+        project_collection.update_one({"_id" : ObjectId(projectid)}, {"$set":{"hwset2": new_checked_out}})
+        hwsets_collection.update_one({"Name": "HWSet2"}, {"$set": {"Availability": new_availability}})
+        return {"success" : True}, 200
+
+@app.route('/getAvail', methods=['POST'])
+def getAvail():
+    data = request.get_json()
+    projectid = data.get("project_id")
+    return {
+        "avail1": hwsets_collection.find_one({"Name": "HWSet1"})["Availability"], 
+        "avail2": hwsets_collection.find_one({"Name": "HWSet2"})["Availability"],
+        "checkout1": project_collection.find_one({"_id" : ObjectId(projectid)})["hwset1"],
+        "checkout2": project_collection.find_one({"_id" : ObjectId(projectid)})["hwset2"]
+         }, 200
 
 @app.errorhandler(404)
 def not_found(e):
