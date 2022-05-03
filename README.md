@@ -5,6 +5,7 @@ Group Project for EE 461L
 **1. Sign up or log in.**
 
   a) New user needs to sign up to use our system. User should type in the username and password  and click on “Register”.
+  
   ![1 1](https://user-images.githubusercontent.com/47439747/166570900-26b6b961-9a02-4923-aa24-87f41ab20ef3.png)
   
   After user successfully registered, a message should pop out.
@@ -51,7 +52,7 @@ Group Project for EE 461L
   
   e)By clicking the “Back to Main Page”, user can go back to the main page.
 
-**3.Download datasets.**
+**3. Download datasets.**
 
 a) User can visit the datasets page by clicking “Datasets” on the top of each page. The datasets page contains five different datasets. 
 
@@ -65,7 +66,7 @@ c) User can easily download the data sheet as a zip folder by clicking on the �
 
 ![3 3](https://user-images.githubusercontent.com/47439747/166574364-84679d03-3661-4b76-89ca-b4d7c534f566.png)
 
-**4.Log out. User can easily log out by clicking the “Log out” on the top of each page.**
+**4. Log out. User can easily log out by clicking the “Log out” on the top of each page.**
 
 ![4 1](https://user-images.githubusercontent.com/47439747/166574452-2d91b879-537d-4d2e-a2e8-d205a712d8d3.png)
 
